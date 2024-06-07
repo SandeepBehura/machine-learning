@@ -1,35 +1,98 @@
-# Spam Detection System
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+import nltk
+from nltk.corpus import stopwords
+import string
 
-## Overview
-The Spam Detection System is a machine learning project designed to classify emails or messages as spam or not spam. Utilizing natural language processing (NLP) techniques and machine learning algorithms, this system helps filter out unwanted spam messages, ensuring users receive only relevant and important communications.
+nltk.download('stopwords')
 
-## Features
-- **Data Preprocessing**: Cleans and preprocesses text data, including tokenization, stop word removal, stemming, and lemmatization.
-- **Feature Extraction**: Converts text data into numerical representations using techniques like Bag of Words, TF-IDF, and word embeddings.
-- **Model Training**: Implements various classification algorithms, including Naive Bayes, Support Vector Machines, Random Forests, and Neural Networks.
-- **Model Evaluation**: Evaluates models using metrics such as accuracy, precision, recall, and F1-score to determine the most effective classifier.
-- **Prediction Interface**: Provides an interface for users to input email or message text and receive a spam or not spam classification.
 
-## Installation
-Clone the repository and install the required dependencies:
-```bash
-git clone https://github.com/yourusername/spam-detection-system.git
-cd spam-detection-system
-pip install -r requirements.txt
-```
+# Load the dataset
+df = pd.read_csv('spam.csv', encoding='latin-1')
 
-## Usage
-Run the Jupyter notebooks in the `notebooks/` directory to explore data preprocessing, feature extraction, and model training steps. Use the script in the `src/` directory to classify new messages:
-```bash
-python src/detect_spam.py --input message.txt
-```
+# Display the first few rows of the dataframe
+print(df.head())
 
-## Contributing
-We welcome contributions! Please read the [Contributing Guide](docs/contributing.md) for guidelines on how to contribute to the project.
 
-## License
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+# Remove unnecessary columns
+df = df[['v1', 'v2']]
+df.columns = ['label', 'text']
 
----
+# Convert labels to binary (spam = 1, ham = 0)
+df['label'] = df['label'].map({'spam': 1, 'ham': 0})
 
-*Helping users keep their inboxes clean and relevant with efficient spam detection.*
+# Function to preprocess text data
+def preprocess_text(text):
+    text = text.lower()  # Convert to lowercase
+    text = ''.join([char for char in text if char not in string.punctuation])  # Remove punctuation
+    text = [word for word in text.split() if word not in stopwords.words('english')]  # Remove stopwords
+    return ' '.join(text)
+
+# Apply preprocessing to the text column
+df['text'] = df['text'].apply(preprocess_text)
+
+# Display the first few rows of the preprocessed dataframe
+print(df.head())
+
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(df['text'], df['label'], test_size=0.2, random_state=42)
+
+
+# Initialize the TF-IDF Vectorizer
+vectorizer = TfidfVectorizer()
+
+# Fit and transform the training data
+X_train_tfidf = vectorizer.fit_transform(X_train)
+
+# Transform the testing data
+X_test_tfidf = vectorizer.transform(X_test)
+
+
+# Initialize the Naive Bayes classifier
+model = MultinomialNB()
+
+# Train the model
+model.fit(X_train_tfidf, y_train)
+
+
+# Make predictions on the test set
+y_pred = model.predict(X_test_tfidf)
+
+
+# Evaluate the model
+accuracy = accuracy_score(y_test, y_pred)
+print(f'Accuracy: {accuracy}')
+
+# Display the classification report
+print(classification_report(y_test, y_pred))
+
+# Display the confusion matrix
+cm = confusion_matrix(y_test, y_pred)
+print(cm)
+
+# Visualize the confusion matrix
+plt.figure(figsize=(6, 4))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['Ham', 'Spam'], yticklabels=['Ham', 'Spam'])
+plt.title('Confusion Matrix')
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.show()
+
+
+# Visualize the label distribution
+plt.figure(figsize=(6, 4))
+sns.countplot(data=df, x='label')
+plt.title('Label Distribution')
+plt.xlabel('Label (0 = Ham, 1 = Spam)')
+plt.ylabel('Count')
+plt.show()
+
+
+
