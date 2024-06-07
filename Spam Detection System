@@ -1,0 +1,35 @@
+# Spam Detection System
+
+## Overview
+The Spam Detection System is a machine learning project designed to classify emails or messages as spam or not spam. Utilizing natural language processing (NLP) techniques and machine learning algorithms, this system helps filter out unwanted spam messages, ensuring users receive only relevant and important communications.
+
+## Features
+- **Data Preprocessing**: Cleans and preprocesses text data, including tokenization, stop word removal, stemming, and lemmatization.
+- **Feature Extraction**: Converts text data into numerical representations using techniques like Bag of Words, TF-IDF, and word embeddings.
+- **Model Training**: Implements various classification algorithms, including Naive Bayes, Support Vector Machines, Random Forests, and Neural Networks.
+- **Model Evaluation**: Evaluates models using metrics such as accuracy, precision, recall, and F1-score to determine the most effective classifier.
+- **Prediction Interface**: Provides an interface for users to input email or message text and receive a spam or not spam classification.
+
+## Installation
+Clone the repository and install the required dependencies:
+```bash
+git clone https://github.com/yourusername/spam-detection-system.git
+cd spam-detection-system
+pip install -r requirements.txt
+```
+
+## Usage
+Run the Jupyter notebooks in the `notebooks/` directory to explore data preprocessing, feature extraction, and model training steps. Use the script in the `src/` directory to classify new messages:
+```bash
+python src/detect_spam.py --input message.txt
+```
+
+## Contributing
+We welcome contributions! Please read the [Contributing Guide](docs/contributing.md) for guidelines on how to contribute to the project.
+
+## License
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+
+---
+
+*Helping users keep their inboxes clean and relevant with efficient spam detection.*
