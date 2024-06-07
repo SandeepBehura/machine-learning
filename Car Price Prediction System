@@ -1,35 +1,88 @@
-# Car Price Prediction System
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
 
-## Overview
-The Car Price Prediction System is a machine learning project aimed at predicting the prices of used cars based on various features such as make, model, year, mileage, fuel type, transmission, and more. By leveraging data analysis and machine learning algorithms, this system helps users estimate the market value of a car, enabling informed decision-making for buyers and sellers.
 
-## Features
-- **Data Preprocessing**: Cleans and preprocesses the dataset to handle missing values, categorical variables, and feature scaling.
-- **Exploratory Data Analysis (EDA)**: Visualizes data distributions and relationships between features to uncover insights.
-- **Model Training**: Implements various regression models, including Linear Regression, Decision Trees, Random Forests, and Gradient Boosting.
-- **Model Evaluation**: Evaluates models using metrics such as Mean Absolute Error (MAE), Mean Squared Error (MSE), and R-squared to determine the best-performing model.
-- **Prediction Interface**: Provides a user-friendly interface for users to input car details and receive price predictions.
+df=pd.read_csv('car data.csv')
 
-## Installation
-Clone the repository and install the required dependencies:
-```bash
-git clone https://github.com/yourusername/car-price-prediction.git
-cd car-price-prediction
-pip install -r requirements.txt
-```
+#identifying the missing values
 
-## Usage
-Run the Jupyter notebooks in the `notebooks/` directory to explore data analysis and model training steps. Use the script in the `src/` directory to make predictions:
-```bash
-python src/predict_price.py --input car_details.json
-```
+missing_value=df.isnull()
+missing_value
 
-## Contributing
-We welcome contributions! Please read the [Contributing Guide](docs/contributing.md) for guidelines on how to contribute to the project.
+#removing the duplicates
+duplicates=df.duplicated()
+duplicates
+drop_duplicates=df.drop_duplicates()
+drop_duplicates
 
-## License
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+# Handle missing values
+df.dropna(inplace=True)
 
----
+# Encode categorical variables (e.g., Make, Model)
+df = pd.get_dummies(df, drop_first=True)
 
-*Empowering users with data-driven insights for better car buying and selling decisions.*
+# Define features (X) and target (y)
+X = df.drop('Owner', axis=1)
+y = df['Owner']
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+# Initialize the model
+model = LinearRegression()
+
+# Train the model
+model.fit(X_train, y_train)
+
+
+# Make predictions on the test set
+y_pred = model.predict(X_test)
+
+
+# Evaluate the model
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
+print(f'Mean Squared Error: {mse}')
+print(f'R^2 Score: {r2}')
+
+
+# Plotting the actual vs predicted prices
+plt.figure(figsize=(10, 6))
+plt.scatter(y_test, y_pred, color='blue', edgecolor='k', alpha=0.7)
+plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'k--', lw=4)
+plt.xlabel('Actual')
+plt.ylabel('Predicted')
+plt.title('Actual vs Predicted Car Prices')
+plt.show()
+
+
+# Residual plot
+residuals = y_test - y_pred
+plt.figure(figsize=(10, 6))
+sns.histplot(residuals, kde=True, color='red')
+plt.xlabel('Residuals')
+plt.ylabel('Frequency')
+plt.title('Distribution of Residuals')
+plt.show()
+
+
+# Feature importance plot (for linear regression, using coefficients)
+feature_importance = pd.Series(model.coef_, index=X.columns)
+feature_importance = feature_importance.sort_values(ascending=False)
+
+plt.figure(figsize=(10, 6))
+sns.barplot(x=feature_importance.values, y=feature_importance.index)
+plt.xlabel('Coefficient Value')
+plt.ylabel('Features')
+plt.title('Feature Importance in Linear Regression')
+plt.show()
+
+
+
