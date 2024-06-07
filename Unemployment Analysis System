@@ -1,36 +1,43 @@
-# Unemployment Analysis System
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import plotly .express as px
 
-## Overview
-The Unemployment Analysis System is a data-driven project designed to analyze and visualize unemployment trends over time. Utilizing statistical methods and machine learning algorithms, this system helps uncover patterns, predict future unemployment rates, and provide insights into the factors influencing unemployment.
+data = pd.read_csv('Unemployment_Rate_upto_11_2020.csv')
+data
 
-## Features
-- **Data Collection**: Aggregates unemployment data from reliable sources, including government databases and economic reports.
-- **Data Preprocessing**: Cleans and preprocesses the dataset to handle missing values, normalize data, and prepare it for analysis.
-- **Exploratory Data Analysis (EDA)**: Visualizes unemployment trends, demographic breakdowns, and regional differences using interactive charts and graphs.
-- **Model Training**: Implements time series analysis and machine learning models, such as ARIMA, SARIMA, and Linear Regression, to forecast future unemployment rates.
-- **Model Evaluation**: Evaluates models using metrics like Mean Absolute Error (MAE) and Root Mean Squared Error (RMSE) to identify the most accurate predictors.
-- **Interactive Dashboard**: Provides a user-friendly dashboard for users to explore data, visualize trends, and make predictions.
+# checking dataset information
+data.info()
 
-## Installation
-Clone the repository and install the required dependencies:
-```bash
-git clone https://github.com/yourusername/unemployment-analysis-system.git
-cd unemployment-analysis-system
-pip install -r requirements.txt
-```
+# describing the dataset
+data.describe()
 
-## Usage
-Run the Jupyter notebooks in the `notebooks/` directory to explore data analysis and model training steps. Use the script in the `src/` directory to perform unemployment predictions:
-```bash
-python src/predict_unemployment.py --input data/unemployment_data.csv
-```
+# check null/missing values
+data.isnull().sum()
 
-## Contributing
-We welcome contributions! Please read the [Contributing Guide](docs/contributing.md) for guidelines on how to contribute to the project.
+# rename columns
+data.columns = ['States','Date','Frequency','Estimated Unemployment Rate',
+                'Estimated Employed','Estimated Labour Participation Rate',
+                'Region','Longitude','Latitude']
 
-## License
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+# analysing top rows of dataset
+data.head()
 
----
+# plotting histplot
 
-*Empowering analysts and policymakers with data-driven insights for better understanding and addressing unemployment trends.*
+data.columns=['States','Date','Frequency','Estimated Unemployment Rate',
+                'Estimated Employed','Estimated Labour Participation Rate',
+                'Region','Longitude','Latitude']
+plt.title('Indian Unemployment')
+sns.histplot(x='Estimated Employed',hue='Region',data=data)
+plt.show()
+
+# plotting histplot
+
+plt.figure(figsize=(10,8))
+plt.title("Indian Unemployment")
+sns.histplot(x="Estimated Unemployment Rate",hue='Region',data=data)
+plt.show()
+
+
