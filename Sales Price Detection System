@@ -1,35 +1,95 @@
-# Sales Price Detection System
+import numpy as np
+import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+import matplotlib.pyplot as plt
 
-## Overview
-The Sales Price Detection System is a machine learning project aimed at predicting the sales prices of products based on various features such as product type, brand, seasonality, and historical sales data. By leveraging advanced data analysis and machine learning techniques, this system helps businesses and individuals accurately estimate product prices, optimize pricing strategies, and increase profitability.
+# Load the dataset
+data = pd.read_csv('monthly_sales.csv', parse_dates=['date'])
+data.set_index('date', inplace=True)
 
-## Features
-- **Data Preprocessing**: Cleans and preprocesses the dataset to handle missing values, categorical variables, and feature scaling.
-- **Exploratory Data Analysis (EDA)**: Visualizes data distributions and relationships between features to uncover insights and trends.
-- **Model Training**: Implements various regression models, including Linear Regression, Decision Trees, Random Forests, and Gradient Boosting.
-- **Model Evaluation**: Evaluates models using metrics such as Mean Absolute Error (MAE), Mean Squared Error (MSE), and R-squared to determine the best-performing model.
-- **Prediction Interface**: Provides a user-friendly interface for users to input product details and receive sales price predictions.
+# Feature Engineering: Creating a supervised learning problem
+data['sales_diff'] = data['sales'].diff()
+data.dropna(inplace=True)
 
-## Installation
-Clone the repository and install the required dependencies:
-```bash
-git clone https://github.com/yourusername/sales-price-detection-system.git
-cd sales-price-detection-system
-pip install -r requirements.txt
-```
+def create_supervised(data, lag=1):
+    df = pd.DataFrame(data)
+    columns = [df.shift(i) for i in range(1, lag+1)]
+    columns.append(df)
+    df = pd.concat(columns, axis=1)
+    df.fillna(0, inplace=True)
+    return df
 
-## Usage
-Run the Jupyter notebooks in the `notebooks/` directory to explore data analysis and model training steps. Use the script in the `src/` directory to make predictions:
-```bash
-python src/predict_price.py --input product_details.json
-```
+# Creating supervised data for the last 24 months
+supervised_data = create_supervised(data['sales_diff'], 12)
 
-## Contributing
-We welcome contributions! Please read the [Contributing Guide](docs/contributing.md) for guidelines on how to contribute to the project.
+# Splitting data into train and test sets
+train_data = supervised_data[:-12]
+test_data = supervised_data[-12:]
 
-## License
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+print("Train data shape: ", train_data.shape)
+print("Test data shape: ", test_data.shape)
 
----
+# Scaling features
+scaler = MinMaxScaler(feature_range=(-1, 1))
+scaler.fit(train_data)
+train_data = scaler.transform(train_data)
+test_data = scaler.transform(test_data)
 
-*Empowering businesses with accurate sales price predictions for optimized pricing strategies and increased profitability.*
+# Splitting data into input and output
+x_train, y_train = train_data[:, 1:], train_data[:, 0]
+x_test, y_test = test_data[:, 1:], test_data[:, 0]
+
+y_train = y_train.reshape(-1, 1)
+y_test = y_test.reshape(-1, 1)
+
+print("x_train shape: ", x_train.shape)
+print("y_train shape: ", y_train.shape)
+print("x_test shape: ", x_test.shape)
+print("y_test shape: ", y_test.shape)
+
+# Creating a DataFrame to store predictions
+sales_dates = data.index[-12:].to_series().reset_index(drop=True)
+predict_df = pd.DataFrame(sales_dates, columns=['date'])
+
+# Actual sales for the last 12 months
+actual_sales = data['sales'].values[-12:]
+
+# Train the Linear Regression model
+lr_model = LinearRegression()
+lr_model.fit(x_train, y_train)
+lr_predict = lr_model.predict(x_test)
+
+# Inverse transform to original scale
+lr_predict = scaler.inverse_transform(np.concatenate((lr_predict, x_test), axis=1))[:, 0]
+
+# Calculating predicted sales
+result_list = []
+for index in range(len(lr_predict)):
+    result_list.append(lr_predict[index] + actual_sales[index])
+
+lr_predict_series = pd.Series(result_list, name='linear_prediction')
+
+# Merging with prediction DataFrame
+predict_df = predict_df.join(lr_predict_series)
+
+# Model Evaluation
+# Ensure the actual sales and predictions have the same length
+lr_mse = np.sqrt(mean_squared_error(actual_sales, result_list))
+lr_mae = mean_absolute_error(actual_sales, result_list)
+lr_r2 = r2_score(actual_sales, result_list)
+
+print(f"Linear Regression MSE: {lr_mse}")
+print(f"Linear Regression MAE: {lr_mae}")
+print(f"Linear Regression R2 Score: {lr_r2}")
+
+# Plotting actual sales vs predicted sales
+plt.figure(figsize=(15, 5))
+plt.plot(data.index[-12:], actual_sales, label='Actual Sales')
+plt.plot(predict_df['date'], predict_df['linear_prediction'], label='Predicted Sales', linestyle='--')
+plt.title('Actual Sales vs Predicted Sales')
+plt.xlabel('Date')
+plt.ylabel('Sales')
+plt.legend()
+plt.show()
