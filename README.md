@@ -1,4 +1,4 @@
-# machine-learning
+# Machine-learning
 It includes many machine learning projects
 # Machine Learning Project Repository
 
