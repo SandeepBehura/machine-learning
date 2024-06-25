@@ -1,7 +1,7 @@
-Machine Learning Projects
+##Machine Learning Projects
 This repository contains several machine learning projects implemented using Python. Each project focuses on different aspects of data analysis, prediction, and classification. Below is an overview of the projects included:
 
-Projects
+##Projects
 1. Car Price Prediction
 Predicting car prices based on various features such as mileage, model year, brand, and technical specifications using regression models.
 
@@ -17,21 +17,21 @@ Analyzing unemployment trends over time using time series forecasting methods an
 5. Sales Price Prediction
 Predicting sales prices of products based on historical sales data, market trends, and other relevant features using regression techniques.
 
-Usage
+##Usage
 Each project directory contains its own README.md file with specific instructions on how to set up and run the project. Please refer to individual project directories for detailed information.
 
-Requirements
+##Requirements
 Python 3.x
 Libraries such as pandas, scikit-learn, matplotlib, seaborn, etc. (specific requirements may vary by project)
 Contributing
 Contributions are welcome! If you want to contribute to any of the projects, please follow these steps:
 
-Fork the repository
+##Fork the repository
 Create a new branch (git checkout -b feature)
 Make your changes
 Commit your changes (git commit -am 'Add new feature')
 Push to the branch (git push origin feature)
 Create a new Pull Request
-License
+##License
 This repository is licensed under the MIT License. See the LICENSE file for more information.
 
